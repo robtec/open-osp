@@ -25,7 +25,7 @@ case $COMPONENT in
             docker compose  -f docker-compose.build.yml run --rm builder ./bin/build-oscar.sh
             mv $OSCAR_OUTPUT/oscar/target/oscar-*-SNAPSHOT.war $OSCAR_OUTPUT/oscar.war
         else
-            mkdir -p $OSCAR_OUTPUT
+            ./bin/clone.sh ${OSCAR_REPO:-""} ${OSCAR_TREEISH:-""}
             cp $WARFILE $OSCAR_OUTPUT/oscar.war
         fi
 
