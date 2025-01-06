@@ -40,8 +40,6 @@ services:
         # TODO: build some scripts in so we need not mount everything.
         - .:/code
         - mariadb-files:/var/lib/mysql
-      networks:
-        - back-tier
       deploy:
         resources:
           limits:
@@ -60,12 +58,26 @@ services:
         - ./volumes/ssl.key:/usr/local/tomcat/conf/ssl.key
         - ./volumes/chain.pem:/usr/local/tomcat/conf/chain.pem
         # Add other volumes to the volumes/ folder, and mount them via docker-compose.override.yml
-      networks:
-        - back-tier
       environment:
         TZ: America/Vancouver
         CATALINA_OPTS: -Djava.awt.headless=true
         JAVA_OPTS: -Dlog4j2.formatMsgNoLookups=true -XX:+UseCMSInitiatingOccupancyOnly -XX:+UseConcMarkSweepGC -Xmx2G -Xms2G -XX:MaxPermSize=1G -XX:CMSInitiatingOccupancyFraction=68 -Xincgc -Dorg.apache.el.parser.COERCE_TO_ZERO=true
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik-public
+        - traefik.constraint-label=traefik-public
+        - traefik.http.routers.oscar.rule=Host(`oscar.enquires.to`)
+        - traefik.http.routers.oscar.entrypoints=http
+        - traefik.http.routers.oscar.middlewares=securecontent
+        - traefik.http.routers.oscar-ssl.rule=Host(`${DOMAIN}`)
+        - traefik.http.routers.oscar-ssl.entrypoints=https
+        - traefik.http.routers.oscar-ssl.middlewares=securecontent
+        - traefik.http.routers.oscar-ssl.tls=true
+        - traefik.http.routers.oscar-ssl.tls.certresolver=le
+        - traefik.http.services.oscar-ssl.loadbalancer.server.port=8080
+        - traefik.http.middlewares.test-redirectscheme.redirectscheme.scheme=https
+        - traefik.http.middlewares.test-redirectscheme.redirectscheme.permanent=true
+        - traefik.http.middlewares.securecontent.headers.customrequestheaders.Content-Security-Policy=upgrade-insecure-requests
       deploy:
         resources:
           limits:
@@ -81,8 +93,6 @@ services:
         - ./volumes/ssl.key:/usr/local/tomcat/conf/ssl.key
         - ./volumes/expedius:/var/lib/expedius
         - ./volumes/tomcat-users.xml:/usr/local/tomcat/conf/tomcat-users.xml
-      networks:
-        - back-tier
       environment:
         TZ: America/Vancouver
         JAVA_OPTS: -Dlog4j2.formatMsgNoLookups=true
@@ -100,8 +110,6 @@ services:
         - ./volumes/OscarDocument:/var/lib/OscarDocument
         - ./volumes/ssl.crt:/usr/local/tomcat/conf/ssl.crt
         - ./volumes/ssl.key:/usr/local/tomcat/conf/ssl.key
-      networks:
-        - back-tier
       env_file:
         - local.env
       environment:
@@ -117,7 +125,3 @@ services:
 volumes:
   mariadb-files:
     driver: local
-
-networks:
-  back-tier:
-    driver: bridge
