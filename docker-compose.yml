@@ -66,7 +66,7 @@ services:
         - traefik.enable=true
         - traefik.docker.network=traefik-public
         - traefik.constraint-label=traefik-public
-        - traefik.http.routers.oscar.rule=Host(`oscar.enquires.to`)
+        - traefik.http.routers.oscar.rule=Host(`${DOMAIN}`)
         - traefik.http.routers.oscar.entrypoints=http
         - traefik.http.routers.oscar.middlewares=securecontent
         - traefik.http.routers.oscar-ssl.rule=Host(`${DOMAIN}`)
@@ -74,7 +74,7 @@ services:
         - traefik.http.routers.oscar-ssl.middlewares=securecontent
         - traefik.http.routers.oscar-ssl.tls=true
         - traefik.http.routers.oscar-ssl.tls.certresolver=le
-        - traefik.http.services.oscar-ssl.loadbalancer.server.port=8080
+        - traefik.http.services.oscar-ssl.loadbalancer.server.port=8443
         - traefik.http.middlewares.test-redirectscheme.redirectscheme.scheme=https
         - traefik.http.middlewares.test-redirectscheme.redirectscheme.permanent=true
         - traefik.http.middlewares.securecontent.headers.customrequestheaders.Content-Security-Policy=upgrade-insecure-requests
